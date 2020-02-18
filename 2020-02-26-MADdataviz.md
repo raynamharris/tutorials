@@ -1,3 +1,9 @@
+Customizing plots with colors and themes
+========================================
+
+For Meet and Analyze Data, February 26, 2020
+--------------------------------------------
+
     library(tidyverse)
 
     ## ── Attaching packages ──────────────────────────────────────────────────────────────── tidyverse 1.3.0 ──
@@ -22,8 +28,18 @@
 
     knitr::opts_chunk$set(echo = TRUE, fig.path = "./images/")
 
-Customizing plots with colors and themes
-========================================
+    # view datat
+    head(mpg)
+
+    ## # A tibble: 6 x 11
+    ##   manufacturer model displ  year   cyl trans  drv     cty   hwy fl    class
+    ##   <chr>        <chr> <dbl> <int> <int> <chr>  <chr> <int> <int> <chr> <chr>
+    ## 1 audi         a4      1.8  1999     4 auto(… f        18    29 p     comp…
+    ## 2 audi         a4      1.8  1999     4 manua… f        21    29 p     comp…
+    ## 3 audi         a4      2    2008     4 manua… f        20    31 p     comp…
+    ## 4 audi         a4      2    2008     4 auto(… f        21    30 p     comp…
+    ## 5 audi         a4      2.8  1999     6 auto(… f        16    26 p     comp…
+    ## 6 audi         a4      2.8  1999     6 manua… f        18    26 p     comp…
 
     summary(mpg)
 
@@ -48,18 +64,6 @@ Customizing plots with colors and themes
     ##  Mean   :23.44                                        
     ##  3rd Qu.:27.00                                        
     ##  Max.   :44.00
-
-    head(mpg)
-
-    ## # A tibble: 6 x 11
-    ##   manufacturer model displ  year   cyl trans  drv     cty   hwy fl    class
-    ##   <chr>        <chr> <dbl> <int> <int> <chr>  <chr> <int> <int> <chr> <chr>
-    ## 1 audi         a4      1.8  1999     4 auto(… f        18    29 p     comp…
-    ## 2 audi         a4      1.8  1999     4 manua… f        21    29 p     comp…
-    ## 3 audi         a4      2    2008     4 manua… f        20    31 p     comp…
-    ## 4 audi         a4      2    2008     4 auto(… f        21    30 p     comp…
-    ## 5 audi         a4      2.8  1999     6 auto(… f        16    26 p     comp…
-    ## 6 audi         a4      2.8  1999     6 manua… f        18    26 p     comp…
 
     ## start with basic plot
     ggplot(data = mpg) + 
@@ -152,12 +156,14 @@ Customizing plots with colors and themes
 
 ![](./images/cars-9.png)
 
+    # plot together badly
     plot_grid(a,b,c,d)
 
 ![](./images/cars-10.png)
 
+    # plot together better
     plot_grid(a,b,
-              c + theme(legend.position = "none"),
+              c + theme(legend.position = "none" ),
               d + theme(legend.position = "none"),
               rel_heights = c(0.55,0.45),
               label_size = 12, labels = "auto")

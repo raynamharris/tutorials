@@ -5,16 +5,21 @@ date: "2/17/2020"
 output: md_document
 ---
 
+# Customizing plots with colors and themes
+
+## For Meet and Analyze Data, February 26, 2020
+
 ```{r setup}
 library(tidyverse)
 library(cowplot)
 knitr::opts_chunk$set(echo = TRUE, fig.path = "./images/")
 ```
-# Customizing plots with colors and themes
+
 
 ```{r cars}
-summary(mpg)
+# view data
 head(mpg)
+summary(mpg)
 
 ## start with basic plot
 ggplot(data = mpg) + 
@@ -87,9 +92,12 @@ d <- ggplot(data = mpg) +
   mytheme()
 d
 
+# plot together badly
 plot_grid(a,b,c,d)
+
+# plot together better
 plot_grid(a,b,
-          c + theme(legend.position = "none"),
+          c + theme(legend.position = "none" ),
           d + theme(legend.position = "none"),
           rel_heights = c(0.55,0.45),
           label_size = 12, labels = "auto")
