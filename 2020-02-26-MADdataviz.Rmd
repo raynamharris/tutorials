@@ -11,26 +11,39 @@ output: md_document
 
 ```{r setup}
 library(tidyverse)
-library(cowplot)
 knitr::opts_chunk$set(echo = TRUE, fig.path = "./images/")
 ```
 
+### View data
 
-```{r cars}
+```{r data}
 # view data
 head(mpg)
 summary(mpg)
+```
 
+## Plot without color
+
+```{r basic}
 ## start with basic plot
 ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy))
+```
 
+## Plot with car colored by class or cylinder, DEFAULT color pallete
+
+```{r default}
 ## color by factors, default
 ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy, color = as.factor(cyl)))
 ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy, color = as.factor(class)))
 
+```
+
+## Plot with car colored by class or cylinder, CUSTOM color pallete
+
+```{r ordered}
 ## specify order
 levelscyl <- c("4", "5", "6",  "8" )
 levelsclass <- c("2seater", "subcompact", "compact", "midsize",
@@ -58,49 +71,26 @@ ggplot(data = mpg) +
 ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy, color = class)) +
     scale_color_manual(values = colorsall)
+```
 
-## add a custom theme
+## Scatter and box plots with custom THEMES
 
+```{r theme}
 mytheme <- function(){
   theme_classic() +
     theme(legend.position = "bottom",
           axis.text.y = element_text(face = "italic"),
+          axis.title.y = element_text(face = "italic"),
           axis.text.x = element_text(angle = 45, hjust = 1))
 }
 
-a <- ggplot(data = mpg) + 
-  geom_point(mapping = aes(x = displ, y = hwy, color = cyl)) +
-    scale_color_manual(values = colorsall)  +
-  mytheme()  
-a
 
-b <- ggplot(data = mpg) + 
-  geom_point(mapping = aes(x = displ, y = hwy, color = class)) +
-    scale_color_manual(values = colorsall)  +
-  mytheme()
-b
-
-c <- ggplot(mpg, aes(x = cyl, y = hwy, fill = cyl)) + 
-  geom_boxplot(mapping = aes(x = cyl, y = hwy, fill = cyl)) +
-    scale_fill_manual(values = colorsall)  +
-  mytheme()  
-c
-
-d <- ggplot(data = mpg) + 
+ggplot(data = mpg) + 
   geom_boxplot(mapping = aes(x = class, y = hwy, fill = class)) +
     scale_fill_manual(values = colorsall)  +
-  mytheme()
-d
-
-# plot together badly
-plot_grid(a,b,c,d)
-
-# plot together better
-plot_grid(a,b,
-          c + theme(legend.position = "none" ),
-          d + theme(legend.position = "none"),
-          rel_heights = c(0.55,0.45),
-          label_size = 12, labels = "auto")
-
+  mytheme() +
+  labs(subtitle = "Look, the x-axis is rotated and the y-axis is italic!",
+       y = "engine displacement (L)", x = "class of car") +
+  theme(legend.position = "none")
 ```
 
