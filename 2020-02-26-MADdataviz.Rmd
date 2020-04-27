@@ -1,61 +1,66 @@
 ---
-title: "2020-02-26-MADdataviz"
+title: "2020-03-19-customRthemes"
 author: "Rayna M Harris"
 date: "2/17/2020"
-output: md_document
+output: html_document
 ---
 
-# Customizing plots with colors and themes
+# Creating customizing colors palette and themes for ggplot
 
-## For Meet and Analyze Data, February 26, 2020
+This is 15 minute R exercise or tutorial for making custom color pallets and themes to give a consistent look to ggplots. 
 
-```{r setup}
+
+```{r setup, echo = F, include=F}
 library(tidyverse)
+library(cowplot)
 knitr::opts_chunk$set(echo = TRUE, fig.path = "./images/")
 ```
 
-### View data
+## A basic ggplot without color
 
-```{r data}
-# view data
-head(mpg)
-summary(mpg)
-```
+I consult the [R for Data Science](https://r4ds.had.co.nz/) book a lot. This blog post starts with [the code used in Chapter 3](https://r4ds.had.co.nz/data-visualisation.html). I like using this `mpg` dataset because it comes with the tidyverse installation, so I don't need to find an external source of data. 
 
-## Plot without color
-
-```{r basic}
+```{r customRthemes1}
 ## start with basic plot
 ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy))
 ```
 
-## Plot with car colored by class or cylinder, DEFAULT color pallete
+## Two gglots using the same colors for different factors
 
-```{r default}
+When we use the default `ggplot` color palette for four or five different plots in a document, different factors will take on the same color. This deminished the value of using color to convey information.  
+
+```{r customRthemes2}
 ## color by factors, default
-ggplot(data = mpg) + 
+a <- ggplot(data = mpg) + 
   geom_point(mapping = aes(x = displ, y = hwy, color = as.factor(cyl)))
-ggplot(data = mpg) + 
-  geom_point(mapping = aes(x = displ, y = hwy, color = as.factor(class)))
-
+b <-  ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, color = class))
+plot_grid(a,b)
 ```
 
-## Plot with car colored by class or cylinder, CUSTOM color pallete
+## Two ggplots with custom and unique color palletes
 
-```{r ordered}
+Before assigning colors, I arrage the factors in a specific order.
+
+```{r }
 ## specify order
 levelscyl <- c("4", "5", "6",  "8" )
 levelsclass <- c("2seater", "subcompact", "compact", "midsize",
                  "suv", "minivan", "pickup")
 mpg$cyl <- factor(mpg$cyl, levels = levelscyl)
 mpg$class <- factor(mpg$class, levels = levelsclass)
+```
+
+I use [https://colorbrewer2.org/](https://colorbrewer2.org/) to pick  colorblind and photocopy safe colors and get their hex codes. Then I assign the hex codes to factors by name. Finally, I group all my colors into one string that I name `colorsall` for easy use. 
+
+```{r}
 
 ## pick colors using http://colorbrewer2.org/
-colorscyl <- c("4" = "#fdcc8a", 
-               "5" = "#fc8d59", 
-               "6" = "#e34a33",
-               "8" = "#b30000")
+colorscyl <- c("4" = "#cbc9e2", 
+               "5" = "#9e9ac8", 
+               "6" = "#756bb1",
+               "8" = "#54278f")
 
 colorsclass <- c("2seater" = "#e41a1c", 
                  "subcompact" = "#1b7837", 
@@ -63,34 +68,58 @@ colorsclass <- c("2seater" = "#e41a1c",
                  "suv" = "#d8b365", 
                  "minivan" = "#dfc27d", "pickup" = "#bf812d")
 
+# combine all color palletts into one for quick and easy use
 colorsall <- c(colorscyl, colorsclass)
-
-ggplot(data = mpg) + 
-  geom_point(mapping = aes(x = displ, y = hwy, color = cyl)) +
-  scale_color_manual(values = colorsall)
-ggplot(data = mpg) + 
-  geom_point(mapping = aes(x = displ, y = hwy, color = class)) +
-    scale_color_manual(values = colorsall)
 ```
 
-## Scatter and box plots with custom THEMES
+Now, I can add the colors to my plot with `scale_color_manual(values = colorsall)`.
 
-```{r theme}
+```{r customRthemes3}
+c <- ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, color = cyl)) +
+  scale_color_manual(values = colorsall)
+d <- ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, color = class)) +
+    scale_color_manual(values = colorsall)
+
+plot_grid(c,d)
+```
+
+By storing the color in a string outside the plot, it's much easier to update one string and change the colors of all your figures than to change the color pallete for each figure indivdually. 
+
+## ggplot with a custom theme
+
+Finally, I like to create custom themes that save you from copying and pasting the same line of code many many time. In this cause we can use `+ mytheme()` to add four lines of code to given figure in order to rotate the x-axis text, make the y-axis font face bold, and ajust the font size to 11 and use the classic ggplot theme. 
+
+```{r customRthemes4}
 mytheme <- function(){
-  theme_classic() +
+  theme_classic(base_size = 11) +
     theme(legend.position = "bottom",
-          axis.text.y = element_text(face = "italic"),
-          axis.title.y = element_text(face = "italic"),
+          axis.title.y = element_text(face = "bold"),
           axis.text.x = element_text(angle = 45, hjust = 1))
 }
 
+e <- ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, color = cyl)) +
+  scale_color_manual(values = colorsall)  +
+  mytheme() 
 
-ggplot(data = mpg) + 
-  geom_boxplot(mapping = aes(x = class, y = hwy, fill = class)) +
-    scale_fill_manual(values = colorsall)  +
-  mytheme() +
-  labs(subtitle = "Look, the x-axis is rotated and the y-axis is italic!",
-       y = "engine displacement (L)", x = "class of car") +
-  theme(legend.position = "none")
+f <- ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, color = class)) +
+    scale_color_manual(values = colorsall)  +
+  mytheme() 
+
+plot_grid(e,f, align = "hv", rel_widths = c(0.4, 0.6))
+```
+
+Now it's your to experiment with the code. Try these:
+
+- [ ] change the plot to a box plot with `geom_boxplot`
+- [ ] experiment with `scale_color_manual` and `scale_color_manual`
+- [ ] change the colors of a factor in the `diamond` dataset
+
+
+```{r}
+sessionInfo() 
 ```
 
