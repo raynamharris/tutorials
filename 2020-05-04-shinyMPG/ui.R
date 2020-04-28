@@ -11,10 +11,6 @@ library(shiny)
 
 shinyUI(fluidPage(
   
-  # Application title
-  titlePanel("MPG Data"),
-  
-  # Sidebar with a slider input for number of bins 
   sidebarLayout(
     sidebarPanel(
       selectInput(inputId = "xvar",
@@ -22,9 +18,12 @@ shinyUI(fluidPage(
                   choices = c("displ", "cty"))
     ),
     
-    # Show a plot of the generated distribution
     mainPanel(
        plotOutput("scatterplot")
     )
   )
 ))
+
+
+
+

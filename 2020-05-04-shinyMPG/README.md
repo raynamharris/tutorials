@@ -21,13 +21,13 @@ two plots, copy paste
 ---------------------
 
     mpg %>%
-      ggplot(aes(x = displ, y = hwy, color = as.factor(cyl))) + 
+      ggplot(aes(x = displ, y = hwy, color = cyl)) + 
       geom_point() 
 
 ![](../images/shinyMPG-1-1.png)
 
     mpg %>%
-      ggplot(aes(x = cty, y = hwy, color = as.factor(cyl))) + 
+      ggplot(aes(x = cty, y = hwy, color = cyl)) + 
       geom_point()
 
 ![](../images/shinyMPG-1-2.png)
@@ -35,17 +35,17 @@ two plots, copy paste
 two plots, one function
 -----------------------
 
-    carplot <- function(xvar){
+    scatterplot <- function(xvar){
       mpg %>%
-        ggplot(aes(x = xvar, y = hwy, color = as.factor(cyl))) + 
+        ggplot(aes(x = xvar, y = hwy, color = cyl)) + 
         geom_point() 
     }
 
-    carplot(mpg$displ)
+    scatterplot(mpg$displ)
 
 ![](../images/shinyMPG-2-1.png)
 
-    carplot(mpg$cty)
+    scatterplot(mpg$cty)
 
 ![](../images/shinyMPG-2-2.png)
 
