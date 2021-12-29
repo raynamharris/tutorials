@@ -62,6 +62,7 @@ mylables <- c("DG dors.", "DG vent.", "CA4", "CA3 dors.", "CA3 vent.",
 mycolors <- c("#d7322d", "#d7322d", "#612150", "#3b841e", "#3b841e", 
               "#3d98b2", "#0a1550", "#0a1550")
 myalpha <- c(1, 0.7, 1, 1, 0.7, 1, 1, 0.7)
+myalpha2 <- c(1, 0.5, 1, 1, 0.5, 1, 1, 0.5)
 
 
 ensembl <- useEnsembl(biomart="ensembl", dataset="mmusculus_gene_ensembl")
@@ -137,6 +138,62 @@ p <- plot_grid(fig_broad, fig_specific, B1, B2, nrow = 4,
                rel_heights = c(0.75,0.75,1,1))
 
 
-png("images/recount3-mouse.png",width = 1200, height = 800)
+png("images/recount3-broadspecific.png",width = 1200, height = 800)
 print(p)
+dev.off()
+
+
+
+
+
+
+# widen for tsne
+
+fig_M1M2 <- png::readPNG("images/recount3-M1M2.png")
+fig_M1M2 <- ggdraw() +  draw_image(fig_M1M2, scale = 1)
+
+
+
+mycolors2 <- c( "#3b841e",  "#3d98b2",  "#0a1550" )
+
+countData_long_wide <- countData_long %>%
+  filter(!str_detect(mgi_symbol, "mt|Mir")) %>%
+  filter(tissue %in% c("ca3d", "ca2", "ca1d"))  %>%
+  dplyr::select(-mgi_symbol) %>%
+  pivot_wider(id_cols = external_id:ensembl_gene_id,
+              names_from = ensembl_gene_id, 
+              values_from = counts,
+              values_fn = sum)
+
+tsne_data <- countData_long_wide[ ,10:50840]  %>%
+  as.matrix(.)
+
+tsne_samples <- countData_long_wide[ ,1:9] 
+head(tsne_samples)
+
+
+## Run the t-SNE algorithm and store the results into an object called tsne_results
+tsne_results <- Rtsne(tsne_data, perplexity=2, 
+                      check_duplicates = FALSE) 
+
+tsne_results_samples <- as.data.frame(tsne_results$Y) %>%
+  cbind(tsne_samples, .)
+head(tsne_results_samples) 
+
+m <- tsne_results_samples %>%
+  ggplot(aes(x = V1, y = V2, color = tissue)) +
+  geom_point(size = 8, alpha = 0.75) +
+  labs(x = "tSNE dimention 1", 
+       y = "tSNE dimention 2", 
+       color = "Replicates") +
+  scale_color_manual(values = mycolors2,
+                    labels = c("CA3", "CA2", "CA1")
+                    ) +
+  theme_linedraw(base_size = 14) 
+
+p2 <- plot_grid(fig_M1M2, m, rel_widths = c(1, 1.25))
+p2
+
+png("images/recount3-multidim.png", width = 600, height = 250)
+print(p2)
 dev.off()
