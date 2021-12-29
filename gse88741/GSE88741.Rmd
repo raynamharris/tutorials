@@ -1,0 +1,163 @@
+---
+title: "gse88741"
+author: "Rayna M Harris"
+date: "11/30/2021"
+output: md_document
+---
+
+```{r gse88741, fig.path = "../images/"}
+library(tidyverse)
+library(ggplot2)
+library(cowplot)
+library(DESeq2)
+library(pheatmap)
+
+## get data
+
+## https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE88741
+
+## https://maayanlab.cloud/biojupies/analyze/example
+
+countData <- read.delim("GSE88741-expression.txt")
+head(countData)
+str(countData)
+
+colData <- read.delim("GSE88741-metadata.txt") %>%
+  mutate(cell.type = str_replace(cell.type, " ", "_"),
+         Stage = str_replace(Stage, " ", "_")) %>%
+  mutate(Stage = factor(Stage, levels = c("primary_melanocytes", 
+                                          "metastatic")))
+  
+
+
+head(colData)
+str(colData)
+
+## make joined df for easy ggplot 2 plotting
+
+df <- countData %>%
+  pivot_longer(-gene_symbol, 
+               names_to = "Sample_geo_accession",
+               values_to = "Count") %>%
+  full_join(., colData) 
+head(df)
+summary(df)
+
+
+## total gene counts 
+
+totals <- df %>%
+  group_by(Sample_geo_accession, Sample.Title, Stage, cell.type) %>%
+  summarise(Reads = sum(Count))
+totals
+
+totals %>%
+  ggplot(aes(x = reorder(Sample_geo_accession, Reads),
+             y = Reads)) +
+  geom_bar(stat = "identity", fill = "#2877b2") +
+  scale_y_continuous(labels = scales::label_number_si()) +
+  coord_flip() +
+  labs(x = "Sample",
+       subtitle = "Gene expression dataset: GSE88741")
+
+totals %>%
+  ggplot(aes(x = reorder(Sample_geo_accession, Reads),
+             y = Reads)) +
+  geom_bar(stat = "identity", aes(fill = Stage)) +
+  scale_y_continuous(labels = scales::label_number_si()) +
+  coord_flip() +
+  labs(x = "Sample", fill = "Stage",
+       subtitle = "Gene expression dataset: GSE88741")
+
+
+## prep for DESeq2 and PCA
+
+rownames(colData) <- colData$Sample_geo_accession
+rownames(countData) <- countData$gene_symbol
+countData$gene_symbol <- NULL
+
+
+## for pca
+df_pca <- as.data.frame(t(countData)) %>%
+  prcomp()
+df_pca <- as.data.frame(df_pca$x)
+
+df_pca <- df_pca %>%
+  mutate(Sample_geo_accession = row.names(.)) %>%
+  full_join(., colData)
+head(df_pca)
+
+df_pca %>%
+  ggplot(aes(x = PC1, y = PC2)) +
+  geom_point(aes(color = Stage), size = 3) +
+  theme_cowplot() +
+  labs(color = "Stage",
+       subtitle = "Gene expression dataset: GSE88741")
+
+
+
+
+## deseq2
+
+dds <- DESeqDataSetFromMatrix(countData = countData,
+                              colData = colData,
+                              design= ~ Stage)
+dds <- DESeq(dds)
+resultsNames(dds) # lists the coefficients
+res <- results(dds)
+
+res
+summary(res)
+
+
+resOrdered <- res[order(res$pvalue),]
+resOrdered
+
+
+
+
+
+# DEGs
+sum(res$padj < 0.1, na.rm=TRUE)
+plotMA(res, ylim=c(-2,2))
+
+
+## heatmap
+select <- order(rowMeans(counts(dds,normalized=TRUE)),
+                decreasing=TRUE)[1:25]
+anndf <- as.data.frame(colData(dds)[,c("Sample_geo_accession","Stage")])
+ntd <- normTransform(dds)
+pheatmap(assay(ntd)[select,], 
+         cluster_rows=T, show_rownames=TRUE,
+         cluster_cols=T, annotation_col = anndf)
+
+## top 5 degs
+
+df %>%
+  filter(gene_symbol %in% c("AEBP1", "CA14", "NFATC4",   "PMEL", "SERPINE2")) %>%
+  ggplot(aes(x = Stage, y = Count)) +
+  geom_point() +
+  geom_boxplot(aes(fill = Stage)) +
+  facet_wrap(~gene_symbol, nrow =1, scales = "free_y") +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
+        strip.text = element_text(face = "italic"))  +
+  scale_y_continuous(labels = scales::label_number_si()) +
+  labs(subtitle = "Differentially expressed genes from GSE88741")
+  
+
+df %>%
+  filter(gene_symbol %in% c("BRCA1", "POMC", "PRL",   "PRLR", "MC2R", "FOS", "JUN")) %>%
+  ggplot(aes(x = Stage, y = Count)) +
+  geom_point() +
+  geom_boxplot(aes(fill = Stage)) +
+  facet_wrap(~gene_symbol, nrow =1, scales = "free_y") +
+  theme_cowplot() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
+        strip.text = element_text(face = "italic"))  +
+  scale_y_continuous(labels = scales::label_number_si()) +
+  labs(subtitle =  "Favorite genes")
+```
+
