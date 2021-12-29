@@ -143,7 +143,7 @@ print(p)
 dev.off()
 
 
-
+fig2b("Pomc", "Granule cells, dors.", "RNA-Seq Counts")
 
 
 
