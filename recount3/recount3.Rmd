@@ -15,8 +15,7 @@ library(DESeq2)
 library(ggpubr)
 ```
 
-
-```{r gtex}
+```{r gtex, cache = TRUE}
 
 # From https://bioconductor.org/packages/release/bioc/vignettes/recount3/inst/doc/recount3-quickstart.html
 
@@ -115,9 +114,7 @@ countData_long <- countData %>%
 head(countData_long)
 tail(countData_long)
 
-# plot your favorite gene
-
-
+# plot the first gene
 
 b <- countData_long %>%
   filter( hgnc_symbol == "MT-CO2") %>%
@@ -139,7 +136,7 @@ countData_long_wide <- countData_long %>%
               values_from = counts,
               values_fn = sum)
 head(countData_long_wide)
-colnames(countData_long_wide)
+head(colnames(countData_long_wide))
 
 tsne_data <- countData_long_wide[ ,6:306] # We are sub-setting IR object such as to include 'all rows' and columns 1 to 4.
 tsne_samples <- countData_long_wide[ ,1:5] # We are sub-setting IR object such as to include 'all rows' and column 5.
@@ -174,8 +171,8 @@ rownames(colData) <- gsub(x = rownames(colData) , pattern = "\\-", replacement =
 colData$gtex.age <- gsub(x = colData$gtex.age , pattern = "\\-", replacement = "_")
 colData$gtex.smtsd <-  gsub(x = colData$gtex.smtsd , pattern = "\\-", replacement = "")
 colData$gtex.smtsd <-  gsub(x = colData$gtex.smtsd , pattern = " ", replacement = "")
-names(countData)
-rownames(colData)
+head(names(countData))
+head(rownames(colData))
 
 # check that rows and samples match
 rownames(colData) == colnames(countData)
@@ -194,9 +191,7 @@ head(countDataSlim)[1:5]
 # check that rows and samples match
 rownames(colDataSlim) == colnames(countDataSlim)
 
-
 #deseq
-
 
 dds <- DESeqDataSetFromMatrix(countData = countDataSlim,
                               colData = colDataSlim,
@@ -215,9 +210,9 @@ sum(res1$padj < 0.1, na.rm=TRUE) # age 1145 DEGS
 sum(res2$padj < 0.1, na.rm=TRUE) # tissue 5243 tissue
 sum(res3$padj < 0.1, na.rm=TRUE) # tissue 5243 tissue
 
-plotMA(res1, ylim=c(-2,2))
-plotMA(res2, ylim=c(-2,2))
-plotMA(res3, ylim=c(-2,2))
+#plotMA(res1, ylim=c(-2,2))
+#plotMA(res2, ylim=c(-2,2))
+#plotMA(res3, ylim=c(-2,2))
 
 ensembl_gene_id <- rownames(res1)  
 ensembl_gene_id <- data.frame(ensembl_gene_id) %>%
@@ -258,7 +253,7 @@ p2 <- plot_grid(d,e, f, nrow = 1)
 ```
 
 
-```{r mouse}
+```{r mouse,cache = TRUE}
 
 # From https://bioconductor.org/packages/release/bioc/vignettes/recount3/inst/doc/recount3-quickstart.html
 # Manuscript https://elifesciences.org/articles/14997
@@ -288,7 +283,6 @@ dim(countData)
 head(rownames(colData))
 head(rownames(countData))
 head(colnames(countData))
-
 
 # subset data
 # include only those with SRA accession numbers
@@ -402,9 +396,8 @@ p2 <- plot_grid(o,r,q,n,s,m, nrow = 1)
 
 # widen for tsne
 
-fig_M1M2 <- png::readPNG("images/recount3-M1M2.png")
+fig_M1M2 <- png::readPNG("../images/recount3-M1M2.png")
 fig_M1M2 <- ggdraw() +  draw_image(fig_M1M2, scale = 1)
-
 
 
 mycolors2 <- c( "#3b841e",  "#3d98b2",  "#0a1550" )
@@ -445,7 +438,6 @@ n <- tsne_results_samples %>%
   theme_linedraw(base_size = 14) 
 
 p3 <- plot_grid(fig_M1M2, n, rel_widths = c(1, 1.25))
-
 
 ```
 
