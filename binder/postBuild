@@ -1,0 +1,5 @@
+#!/bin/bash
+
+conda install -c bioconda bioconductor-recount3
+conda install -c bioconda bioconductor-biomaRt
+conda install -c bioconda bioconductor-deseq2

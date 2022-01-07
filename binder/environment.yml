@@ -15,5 +15,4 @@ dependencies:
   - r-magick
   - r-scales
   - r-rtsne
-  - bioconductor-recount3
-  - bioconductor-biomaRt
+  - r-ggpubr
