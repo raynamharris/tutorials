@@ -1,5 +1,5 @@
- name: tutorials 
- channels:
+name: tutorials 
+channels:
   - conda-forge
   - bioconda
   - defaults
