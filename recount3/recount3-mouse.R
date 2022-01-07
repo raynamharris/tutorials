@@ -7,15 +7,7 @@ library(biomaRt)
 library(Rtsne)
 library(cowplot)
 
-# screen shots to recreate
-# source manuscript https://elifesciences.org/articles/14997
-fig_broad <- png::readPNG("images/recount3-broad.png")
-fig_broad <- ggdraw() +  draw_image(fig_broad, scale = 1)
 
-fig_specific <- png::readPNG("images/recount3-specific.png")
-fig_specific <- ggdraw() +  draw_image(fig_specific, scale = 1)
-
-plot_grid(fig_broad, fig_specific, nrow = 2)
 
 ## recount 3
 
@@ -73,7 +65,7 @@ gene_info <- getBM(attributes=c('ensembl_gene_id','mgi_symbol'),
   drop_na(.) %>%
   unique(.) %>%
   separate(ensembl_gene_id, into = c("ensembl_gene_id", NA), sep = "\\.")
-
+head(gene_info)
 
 countData_long <- countData %>%
   mutate(ensembl_gene_id = rownames(.)) %>%
@@ -86,6 +78,15 @@ countData_long <- countData %>%
   mutate(tissue = factor(tissue, levels = mylevels))
 head(countData_long)
 tail(countData_long)
+
+# screen shots to recreate from https://elifesciences.org/articles/14997
+fig_broad <- png::readPNG("images/recount3-broad.png")
+fig_broad <- ggdraw() +  draw_image(fig_broad, scale = 1)
+
+fig_specific <- png::readPNG("images/recount3-specific.png")
+fig_specific <- ggdraw() +  draw_image(fig_specific, scale = 1)
+
+
 
 
 fig2b <- function(mygene, mytitle, myylab){
@@ -104,7 +105,7 @@ fig2b <- function(mygene, mytitle, myylab){
     labs(y = myylab, x = "Cells",
          subtitle = mygene,
          title = mytitle) +
-    theme_linedraw(base_size = 12) +
+    theme_linedraw(base_size = 15) +
     theme(legend.position = "none",
           axis.text.x = element_text(angle = 45, 
                                      hjust = 1),
@@ -114,38 +115,50 @@ fig2b <- function(mygene, mytitle, myylab){
   return(p)
 }
 
-a <- fig2b("Prox1", "Granule cells", "RNA-Seq Counts")
+a <- fig2b("Prox1", "Granule cells", "\nRNA-Seq")
 b <- fig2b("Dkk3", "Non-granule cells", " ")
 c <- fig2b("Calb2", "Mossy cells", " ")
 d <- fig2b("Ociad2", "All pyramids", " ")
 e <- fig2b("Cacng5", "CA2 pyramids", " ")
 f <- fig2b("Fibcd1", "CA1 pyramids", " ")
 
-B1 <- plot_grid(a,b,c, d, e, f, nrow =1 )
+B1 <- plot_grid(a,b,c, d, e, f, nrow =1 ,
+                rel_widths = c(1.1,1,1,1,1,1))
 
 
-g <- fig2b("Pdzd2", "Granule cells, dors.", "RNA-Seq Counts")
+g <- fig2b("Pdzd2", "Granule cells, dors.", "\nRNA-Seq")
 h <- fig2b("Tox3", "Granule cells, vent.", " ")
 i <- fig2b("Iyd", "CA3 pyramids, dors.", " ")
 j <- fig2b("Coch", "CA3 pyramids, vent.", " ")
 k <- fig2b("Wfs1", "CA1 pyramids, dors.", " ")
 l <- fig2b("Dcn", "CA1 pyramids, vent.", " ")
 
-B2 <- plot_grid(g,h,i,j,k,l, nrow =1 )
+B2 <- plot_grid(g,h,i,j,k,l, nrow =1 ,
+                rel_widths = c(1.1,1,1,1,1,1))
 
 
-p <- plot_grid(fig_broad, fig_specific, B1, B2, nrow = 4,
-               rel_heights = c(0.75,0.75,1,1))
+
+p <- plot_grid(fig_broad, B1, fig_specific, B2, nrow = 4)
 
 
-png("images/recount3-broadspecific.png",width = 1200, height = 800)
+png("images/recount3-mouse-1.png",width = 1200, height = 1000)
 print(p)
 dev.off()
 
 
-fig2b("Pomc", "Granule cells, dors.", "RNA-Seq Counts")
 
+o <- fig2b("Drd2", "Favorite genes", "RNA-Seq  ")
+r <- fig2b("Fos", " ", " ")
+q <- fig2b("Grin1", " ", " ")
+n <- fig2b("Mc4r", " ", " ")
+s <- fig2b("Oxtr", " ", " ")
+m <- fig2b("Pomc", " ", " ")
 
+p2 <- plot_grid(o,r,q,n,s,m, nrow = 1)
+
+png("images/recount3-mouse-2.png",width = 1200, height = 400)
+print(p2)
+dev.off()
 
 # widen for tsne
 
@@ -180,7 +193,7 @@ tsne_results_samples <- as.data.frame(tsne_results$Y) %>%
   cbind(tsne_samples, .)
 head(tsne_results_samples) 
 
-m <- tsne_results_samples %>%
+n <- tsne_results_samples %>%
   ggplot(aes(x = V1, y = V2, color = tissue)) +
   geom_point(size = 8, alpha = 0.75) +
   labs(x = "tSNE dimention 1", 
@@ -191,9 +204,9 @@ m <- tsne_results_samples %>%
                     ) +
   theme_linedraw(base_size = 14) 
 
-p2 <- plot_grid(fig_M1M2, m, rel_widths = c(1, 1.25))
-p2
+p3 <- plot_grid(fig_M1M2, n, rel_widths = c(1, 1.25))
+p3
 
-png("images/recount3-multidim.png", width = 600, height = 250)
-print(p2)
+png("images/recount3-mouse-3.png", width = 600, height = 250)
+print(p3)
 dev.off()

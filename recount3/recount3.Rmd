@@ -1,0 +1,451 @@
+---
+title: "recount3"
+author: "Rayna M Harris"
+date: "1/6/2022"
+output: md_document
+---
+
+```{r setup, include=TRUE}
+library(tidyverse)
+library(recount3)
+library(biomaRt)
+library(Rtsne)
+library(cowplot)
+library(DESeq2)
+library(ggpubr)
+```
+
+
+```{r gtex}
+
+# From https://bioconductor.org/packages/release/bioc/vignettes/recount3/inst/doc/recount3-quickstart.html
+
+# get GTEx heart data
+human_projects <- available_projects(organism = "human")
+head(human_projects)
+
+subset(human_projects, 
+       file_source == "gtex" & 
+         project_type == "data_sources")
+
+gtex_heart <- subset(human_projects,
+                     project == "HEART"  & 
+                       file_source == "gtex" & 
+                       project_type == "data_sources" )
+
+rse_gtex_heart <- create_rse(gtex_heart)
+rse_gtex_heart
+
+# format data for DESEq2
+countData <- assays(rse_gtex_heart)$raw_counts %>% 
+  as.data.frame()
+colData <- colData(rse_gtex_heart) %>% as.data.frame()
+
+# check that rows and samples match
+rownames(colData) == colnames(countData)
+
+# variables
+dim(colData)
+dim(countData)
+
+head(rownames(colData))
+(colnames(colData))
+head(rownames(countData))
+head(colnames(countData))
+
+# subset data
+# include only those with SRA accession numbers
+# exclude miRNA samples
+
+colData <-  colData %>%
+  filter(gtex.run_acc != "NA",
+         gtex.smnabtcht != "RNA isolation_PAXgene Tissue miRNA") %>%
+  dplyr::select(external_id, study, gtex.run_acc, 
+                gtex.age, gtex.smtsd)
+head(colData)
+
+
+a <- colData %>%
+  group_by(gtex.age, gtex.smtsd) %>%
+  summarise(cohort_size = length(gtex.age)) %>%
+  ggplot(aes(x = gtex.age,  y = cohort_size, fill = gtex.smtsd)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Age", y = "Cohort size", fill = "Tissue",
+       subtitle = "GTEx data obtained using recount3 ") +
+  theme_linedraw(base_size = 15) +
+  theme(legend.position = "none") +
+  geom_text(aes(label = cohort_size),
+            position = position_dodge(width = .9),
+            vjust = -0.25)
+
+# get countdata for this subset of colData
+
+## colData and countData must contain the exact same samples. 
+savecols <- as.character(rownames(colData)) #select the rowsname 
+savecols <- as.vector(savecols) # make it a vector
+countData <- countData %>% dplyr::select(one_of(savecols)) # select just the columns 
+head(countData)[1:5]  
+
+# check that rows and samples match
+rownames(colData) == colnames(countData)
+
+## get and clean ensemble ids
+
+ensembl <- useEnsembl(biomart="ensembl", dataset="hsapiens_gene_ensembl")
+gene_info <- getBM(attributes=c('ensembl_gene_id','hgnc_symbol'),  
+                   mart = ensembl) %>% 
+  mutate_all(na_if, "") %>%
+  drop_na(.) %>%
+  unique(.) %>%
+  mutate(ensembl_gene_id = paste0(ensembl_gene_id, ".1", sep = ""))
+
+head(gene_info)
+tail(gene_info)
+
+
+## make long for easier ggplotting and join with gene info
+
+countData_long <- countData %>%
+  mutate(ensembl_gene_id = rownames(.)) %>%
+  pivot_longer(-ensembl_gene_id, 
+               names_to = "external_id", values_to = "counts") %>%
+  inner_join(gene_info, .,by = "ensembl_gene_id") %>% 
+  full_join(colData, ., by = "external_id") %>%
+  arrange(desc(counts))
+head(countData_long)
+tail(countData_long)
+
+# plot your favorite gene
+
+
+
+b <- countData_long %>%
+  filter( hgnc_symbol == "MT-CO2") %>%
+  ggplot(aes(x = gtex.age, y = counts, 
+             fill = gtex.smtsd)) +
+  geom_boxplot() +
+  scale_y_log10() +
+  labs(y = 'MT-CO2 counts', x = "Age", subtitle = "") +
+  theme_linedraw(base_size = 15) +
+  theme(legend.position = "none")
+
+
+# widen for tsne
+
+countData_long_wide <- countData_long %>%
+  dplyr::select(-hgnc_symbol) %>%
+  pivot_wider(id_cols = external_id:gtex.smtsd,
+              names_from = ensembl_gene_id, 
+              values_from = counts,
+              values_fn = sum)
+head(countData_long_wide)
+colnames(countData_long_wide)
+
+tsne_data <- countData_long_wide[ ,6:306] # We are sub-setting IR object such as to include 'all rows' and columns 1 to 4.
+tsne_samples <- countData_long_wide[ ,1:5] # We are sub-setting IR object such as to include 'all rows' and column 5.
+
+
+## Run the t-SNE algorithm and store the results into an object called tsne_results
+tsne_results <- Rtsne(tsne_data, perplexity=30, 
+                      check_duplicates = FALSE) 
+
+tsne_results_samples <- as.data.frame(tsne_results$Y) %>%
+  cbind(tsne_samples, .)
+head(tsne_results_samples) 
+
+c <- tsne_results_samples %>%
+  ggplot(aes(x = V1, y = V2, color = gtex.smtsd)) +
+  geom_point() +
+  theme_linedraw(base_size = 15) +
+  theme(legend.position = "bottom", legend.direction = "vertical") +
+  labs(x = "tSNE dimention 1", 
+       y = "tSNE dimention 2", 
+       color = "GTEx Tissue", 
+       subtitle = "")
+
+# plot fav gene and tsne
+p <- plot_grid(a,b,c, nrow =1,
+               rel_widths = c(1,1.1,0.9))
+
+
+# replace dashes with underscores for deseq
+names(countData) <- gsub(x = names(countData), pattern = "\\-", replacement = "_")
+rownames(colData) <- gsub(x = rownames(colData) , pattern = "\\-", replacement = "_")
+colData$gtex.age <- gsub(x = colData$gtex.age , pattern = "\\-", replacement = "_")
+colData$gtex.smtsd <-  gsub(x = colData$gtex.smtsd , pattern = "\\-", replacement = "")
+colData$gtex.smtsd <-  gsub(x = colData$gtex.smtsd , pattern = " ", replacement = "")
+names(countData)
+rownames(colData)
+
+# check that rows and samples match
+rownames(colData) == colnames(countData)
+
+# subset to 100 for deseq
+
+colDataSlim <- colData %>%
+  filter(gtex.age  %in% c("30_39","40_49")) 
+
+## colData and countData must contain the exact same samples. 
+savecols <- as.character(rownames(colDataSlim)) #select the rowsname 
+savecols <- as.vector(savecols) # make it a vector
+countDataSlim <- countData %>% dplyr::select(one_of(savecols)) # select just the columns 
+head(countDataSlim)[1:5]  
+
+# check that rows and samples match
+rownames(colDataSlim) == colnames(countDataSlim)
+
+
+#deseq
+
+
+dds <- DESeqDataSetFromMatrix(countData = countDataSlim,
+                              colData = colDataSlim,
+                              design = ~ gtex.age * gtex.smtsd)
+
+dds <- dds[ rowSums(counts(dds)) > 1, ]  # Pre-filtering genes with 0 counts
+dds <- DESeq(dds, parallel = TRUE)
+vsd <- vst(dds, blind=FALSE)
+
+res1 <- results(dds, name="gtex.age_40_49_vs_30_39",  independentFiltering = T)
+res2 <- results(dds, name="gtex.smtsd_HeartLeftVentricle_vs_HeartAtrialAppendage", independentFiltering = T)
+res3 <- results(dds, name="gtex.age40_49.gtex.smtsdHeartLeftVentricle", independentFiltering = T)
+
+
+sum(res1$padj < 0.1, na.rm=TRUE) # age 1145 DEGS
+sum(res2$padj < 0.1, na.rm=TRUE) # tissue 5243 tissue
+sum(res3$padj < 0.1, na.rm=TRUE) # tissue 5243 tissue
+
+plotMA(res1, ylim=c(-2,2))
+plotMA(res2, ylim=c(-2,2))
+plotMA(res3, ylim=c(-2,2))
+
+ensembl_gene_id <- rownames(res1)  
+ensembl_gene_id <- data.frame(ensembl_gene_id) %>%
+  left_join(., gene_info)
+
+ensembl_gene_id <- ensembl_gene_id[1:51297,]
+head(ensembl_gene_id )
+
+d <- ggmaplot(res1, main = expression("Age 30-39" %->% "Age 40 -49"),
+         fdr = 0.05, fc = 2, size = 0.4,
+         palette = c("#B31B21", "#1465AC", "darkgray"),
+         #genenames = as.vector( ensembl_gene_id$hgnc_symbol),
+         legend = "bottom", top = 1,
+         ggtheme = ggplot2::theme_linedraw(base_size = 15))
+
+
+e <- ggmaplot(res2, main = expression("Heart Atrial Appendage" %->% "Heart Left Ventricle"),
+         fdr = 0.05, fc = 2, size = 0.4,
+         palette = c("#F8766D", "#00BFC4", "darkgray"),
+         #genenames = as.vector( ensembl_gene_id$hgnc_symbol),
+         legend = "bottom", top = 1,
+         ggtheme = ggplot2::theme_linedraw(base_size = 15))
+
+
+f <- countData_long %>%
+  filter( ensembl_gene_id == "ENSG00000163217.1") %>%
+  ggplot(aes(x = gtex.age, y = counts, 
+             fill = gtex.smtsd)) +
+  geom_boxplot() +
+  scale_y_log10(labels = scales::label_number_si(accuracy = 0.1)) +
+  labs(y = 'Counts', x = "Age", subtitle = "ENSG00000163217.1") +
+  theme_linedraw(base_size = 15) +
+  theme(legend.position = "bottom", legend.direction = "vertical")
+
+
+p2 <- plot_grid(d,e, f, nrow = 1)
+
+```
+
+
+```{r mouse}
+
+# From https://bioconductor.org/packages/release/bioc/vignettes/recount3/inst/doc/recount3-quickstart.html
+# Manuscript https://elifesciences.org/articles/14997
+
+## recount 3
+
+mouse_projects <- available_projects(organism = "mouse")
+head(mouse_projects)
+
+SRP066161 <- subset(mouse_projects, project == "SRP066161" )
+
+myrse <- create_rse(SRP066161)
+myrse
+
+## format data for DESEq2
+
+countData <- assays(myrse)$raw_counts %>% as.data.frame()
+colData <- colData(myrse) %>% as.data.frame()
+
+# check that rows and samples match
+rownames(colData) == colnames(countData)
+
+# variables
+dim(colData)
+dim(countData)
+
+head(rownames(colData))
+head(rownames(countData))
+head(colnames(countData))
+
+
+# subset data
+# include only those with SRA accession numbers
+# exclude miRNA samples
+
+colData <-  colData %>%
+  dplyr::select(external_id:sra.submission_acc, sra.experiment_title,
+                sra.run_total_bases) %>%
+  separate(sra.experiment_title, into = c("GSM", "sample"), sep = " ") %>%
+  separate(sample, into = c("tissue", "rep"), sep = "_")
+head(colData)
+
+
+mylevels <- c("dgd", "dgv", "ca4", "ca3d", "ca3v", "ca2", "ca1d", "ca1v")
+mylables <- c("DG dors.", "DG vent.", "CA4", "CA3 dors.", "CA3 vent.", 
+              "CA2", "CA1 dors.", "CA1 vent.")
+mycolors <- c("#d7322d", "#d7322d", "#612150", "#3b841e", "#3b841e", 
+              "#3d98b2", "#0a1550", "#0a1550")
+myalpha <- c(1, 0.7, 1, 1, 0.7, 1, 1, 0.7)
+myalpha2 <- c(1, 0.5, 1, 1, 0.5, 1, 1, 0.5)
+
+
+ensembl <- useEnsembl(biomart="ensembl", dataset="mmusculus_gene_ensembl")
+
+gene_info <- getBM(attributes=c('ensembl_gene_id','mgi_symbol'),  
+                   mart = ensembl) %>% 
+  mutate_all(na_if, "") %>%
+  drop_na(.) %>%
+  unique(.) %>%
+  separate(ensembl_gene_id, into = c("ensembl_gene_id", NA), sep = "\\.")
+head(gene_info)
+
+countData_long <- countData %>%
+  mutate(ensembl_gene_id = rownames(.)) %>%
+  separate(ensembl_gene_id, into = c("ensembl_gene_id", NA), sep = "\\.") %>%
+  pivot_longer(-ensembl_gene_id, 
+               names_to = "external_id", values_to = "counts") %>%
+  right_join(gene_info, .,by = "ensembl_gene_id") %>% 
+  full_join(colData, ., by = "external_id") %>%
+  arrange(desc(counts)) %>%
+  mutate(tissue = factor(tissue, levels = mylevels))
+head(countData_long)
+tail(countData_long)
+
+# screen shots to recreate from https://elifesciences.org/articles/14997
+fig_broad <- png::readPNG("../images/recount3-broad.png")
+fig_broad <- ggdraw() +  draw_image(fig_broad, scale = 1)
+
+fig_specific <- png::readPNG("../images/recount3-specific.png")
+fig_specific <- ggdraw() +  draw_image(fig_specific, scale = 1)
+
+fig2b <- function(mygene, mytitle, myylab){
+  p <- countData_long %>%
+    filter( mgi_symbol  == mygene) %>%
+    group_by(tissue) %>%
+    summarize(meancounts = mean(counts),
+              sdcounts = sd(counts)) %>%
+    ggplot(aes(x = tissue, y = meancounts, 
+               fill = tissue, alpha = tissue  )) +
+    geom_bar(stat = "identity") +
+    geom_errorbar(aes(ymin=meancounts-sdcounts, 
+                      ymax=meancounts+sdcounts), width=.2) +
+    scale_y_continuous(labels = scales::label_number_si(accuracy = 0.1)) +
+    scale_alpha_manual(values = myalpha) +
+    labs(y = myylab, x = "Cells",
+         subtitle = mygene,
+         title = mytitle) +
+    theme_linedraw(base_size = 15) +
+    theme(legend.position = "none",
+          axis.text.x = element_text(angle = 45, 
+                                     hjust = 1),
+          plot.subtitle = element_text(face = "italic")) +
+    scale_fill_manual(values = mycolors) +
+    scale_x_discrete(labels = mylables)
+  return(p)
+}
+
+a <- fig2b("Prox1", "Granule cells", "\nRNA-Seq")
+b <- fig2b("Dkk3", "Non-granule cells", " ")
+c <- fig2b("Calb2", "Mossy cells", " ")
+d <- fig2b("Ociad2", "All pyramids", " ")
+e <- fig2b("Cacng5", "CA2 pyramids", " ")
+f <- fig2b("Fibcd1", "CA1 pyramids", " ")
+
+B1 <- plot_grid(a,b,c, d, e, f, nrow =1 ,
+                rel_widths = c(1.1,1,1,1,1,1))
+
+g <- fig2b("Pdzd2", "Granule cells, dors.", "\nRNA-Seq")
+h <- fig2b("Tox3", "Granule cells, vent.", " ")
+i <- fig2b("Iyd", "CA3 pyramids, dors.", " ")
+j <- fig2b("Coch", "CA3 pyramids, vent.", " ")
+k <- fig2b("Wfs1", "CA1 pyramids, dors.", " ")
+l <- fig2b("Dcn", "CA1 pyramids, vent.", " ")
+
+B2 <- plot_grid(g,h,i,j,k,l, nrow =1 ,
+                rel_widths = c(1.1,1,1,1,1,1))
+
+
+p <- plot_grid(fig_broad, B1, fig_specific, B2, nrow = 4)
+
+
+o <- fig2b("Drd2", "Favorite genes", "RNA-Seq  ")
+r <- fig2b("Fos", " ", " ")
+q <- fig2b("Grin1", " ", " ")
+n <- fig2b("Mc4r", " ", " ")
+s <- fig2b("Oxtr", " ", " ")
+m <- fig2b("Pomc", " ", " ")
+
+p2 <- plot_grid(o,r,q,n,s,m, nrow = 1)
+
+
+# widen for tsne
+
+fig_M1M2 <- png::readPNG("images/recount3-M1M2.png")
+fig_M1M2 <- ggdraw() +  draw_image(fig_M1M2, scale = 1)
+
+
+
+mycolors2 <- c( "#3b841e",  "#3d98b2",  "#0a1550" )
+
+countData_long_wide <- countData_long %>%
+  filter(!str_detect(mgi_symbol, "mt|Mir")) %>%
+  filter(tissue %in% c("ca3d", "ca2", "ca1d"))  %>%
+  dplyr::select(-mgi_symbol) %>%
+  pivot_wider(id_cols = external_id:ensembl_gene_id,
+              names_from = ensembl_gene_id, 
+              values_from = counts,
+              values_fn = sum)
+
+tsne_data <- countData_long_wide[ ,10:50840]  %>%
+  as.matrix(.)
+
+tsne_samples <- countData_long_wide[ ,1:9] 
+head(tsne_samples)
+
+
+## Run the t-SNE algorithm and store the results into an object called tsne_results
+tsne_results <- Rtsne(tsne_data, perplexity=2, 
+                      check_duplicates = FALSE) 
+
+tsne_results_samples <- as.data.frame(tsne_results$Y) %>%
+  cbind(tsne_samples, .)
+head(tsne_results_samples) 
+
+n <- tsne_results_samples %>%
+  ggplot(aes(x = V1, y = V2, color = tissue)) +
+  geom_point(size = 8, alpha = 0.75) +
+  labs(x = "tSNE dimention 1", 
+       y = "tSNE dimention 2", 
+       color = "Replicates") +
+  scale_color_manual(values = mycolors2,
+                    labels = c("CA3", "CA2", "CA1")
+                    ) +
+  theme_linedraw(base_size = 14) 
+
+p3 <- plot_grid(fig_M1M2, n, rel_widths = c(1, 1.25))
+
+
+```
+

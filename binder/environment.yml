@@ -1,0 +1,17 @@
+ name: tutorials 
+ channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - r-base
+  - r-knitr
+  - r-rmarkdown
+  - r-tidyverse
+  - r-lubridate
+  - r-cowplot
+  - r-magick
+  - r-scales
+  - r-rtsne
+  - bioconductor-recount3
+  - bioconductor-biomaRt
