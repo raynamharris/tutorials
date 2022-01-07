@@ -5,6 +5,8 @@ channels:
   - defaults
 dependencies:
   - r-base
+  - r-irkernel=1.1 
+  - r-devtools
   - r-knitr
   - r-rmarkdown
   - r-tidyverse
