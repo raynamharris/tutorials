@@ -10,7 +10,7 @@ library(ggpubr)
 
 # get GTEx heart data
 human_projects <- available_projects(organism = "human")
-head(human_projects)
+tail(human_projects)
 
 subset(human_projects, 
        file_source == "gtex" & 
@@ -20,6 +20,7 @@ gtex_heart <- subset(human_projects,
                      project == "HEART"  & 
                        file_source == "gtex" & 
                        project_type == "data_sources" )
+head(gtex_heart)
 
 rse_gtex_heart <- create_rse(gtex_heart)
 rse_gtex_heart
@@ -28,6 +29,13 @@ rse_gtex_heart
 countData <- assays(rse_gtex_heart)$raw_counts %>% 
   as.data.frame()
 colData <- colData(rse_gtex_heart) %>% as.data.frame()
+
+
+assay(rse_gtex_heart, "counts") <- transform_counts(rse_gtex_heart)
+
+countData2 <- assays(rse_gtex_heart)$counts %>% 
+  as.data.frame()
+tail(countData2)
 
 # check that rows and samples match
 rownames(colData) == colnames(countData)
@@ -251,6 +259,6 @@ f <- countData_long %>%
 p2 <- plot_grid(d,e, f, nrow = 1, rel_widths = c(1,1.1,1))
 p2
 
-png("../images/recount3-gtex-2.png", width = 1200, height = 600)
+png("../images/recount3-gtex-4.png", width = 1200, height = 600)
 print(p2)
 dev.off()

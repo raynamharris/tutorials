@@ -23,15 +23,12 @@ library(ggpubr)
 human_projects <- available_projects(organism = "human")
 head(human_projects)
 
-subset(human_projects, 
-       file_source == "gtex" & 
-         project_type == "data_sources")
-
 gtex_heart <- subset(human_projects,
                      project == "HEART"  & 
                        file_source == "gtex" & 
                        project_type == "data_sources" )
 
+head(gtex_heart)
 rse_gtex_heart <- create_rse(gtex_heart)
 rse_gtex_heart
 
@@ -138,8 +135,9 @@ countData_long_wide <- countData_long %>%
 head(countData_long_wide)
 head(colnames(countData_long_wide))
 
-tsne_data <- countData_long_wide[ ,6:306] # We are sub-setting IR object such as to include 'all rows' and columns 1 to 4.
-tsne_samples <- countData_long_wide[ ,1:5] # We are sub-setting IR object such as to include 'all rows' and column 5.
+tsne_samples <- countData_long_wide[ ,1:5]  
+tsne_data <- countData_long_wide[ ,6:15225] 
+
 
 
 ## Run the t-SNE algorithm and store the results into an object called tsne_results
@@ -171,11 +169,9 @@ rownames(colData) <- gsub(x = rownames(colData) , pattern = "\\-", replacement =
 colData$gtex.age <- gsub(x = colData$gtex.age , pattern = "\\-", replacement = "_")
 colData$gtex.smtsd <-  gsub(x = colData$gtex.smtsd , pattern = "\\-", replacement = "")
 colData$gtex.smtsd <-  gsub(x = colData$gtex.smtsd , pattern = " ", replacement = "")
-head(names(countData))
-head(rownames(colData))
 
 # check that rows and samples match
-rownames(colData) == colnames(countData)
+head(rownames(colData) == colnames(countData))
 
 # subset to 100 for deseq
 
@@ -252,6 +248,63 @@ p2 <- plot_grid(d,e, f, nrow = 1)
 
 ```
 
+
+
+```{r recount3-gtex}
+a + theme(legend.position = "right")
+
+b + theme(legend.position = "right") + 
+  labs(fill = "Tissue") +
+  scale_y_continuous(labels = scales::label_number_si()) 
+
+g <- tsne_results_samples %>%
+      ggplot(aes(x = V1, y = V2, color = gtex.smtsd)) +
+      geom_point() +
+      theme_linedraw(base_size = 15) +
+      theme(legend.position = "bottom", legend.direction = "vertical") +
+      labs(x = "tSNE dimention 1", 
+           y = "tSNE dimention 2", 
+           color = "Tissue", 
+           subtitle = "")
+
+h <- tsne_results_samples %>%
+      ggplot(aes(x = V1, y = V2, color = gtex.age)) +
+      geom_point() +
+      theme_linedraw(base_size = 15) +
+      theme(legend.position = "bottom", legend.direction = "vertical") +
+      labs(x = "tSNE dimention 1", 
+           y = "tSNE dimention 2", 
+           color = "Age", 
+           subtitle = "") +
+  guides(color=guide_legend(nrow=2,byrow=TRUE))
+
+plot_grid(g,h, nrow =1)
+
+
+d <- ggmaplot(res1, main = expression("Age: 30-39" %->% "40-49"),
+         fdr = 0.05, fc = 2, size = 0.4,
+         palette = c("#B31B21", "#1465AC", "darkgray"),
+         legend = "bottom", top = 1,
+         ggtheme = ggplot2::theme_linedraw(base_size = 15))
+
+
+e <- ggmaplot(res2, main = expression("Heart: Atrial Appendage" %->% "Left Ventricle"),
+         fdr = 0.05, fc = 2, size = 0.4,
+         palette = c("#B31B21", "#1465AC", "darkgray"),
+         legend = "bottom", top = 1,
+         ggtheme = ggplot2::theme_linedraw(base_size = 15))
+
+p2 <- plot_grid(d,e, f, nrow = 1)
+p2
+png("../images/recount3-gtex-2.png", width = 1200, height = 600)
+print(p2)
+dev.off()
+
+
+sum(res1$padj < 0.05, na.rm=TRUE) # age 1145 DEGS
+sum(res2$padj < 0.05, na.rm=TRUE) # tissue 5243 tissue
+
+```
 
 ```{r mouse,cache = TRUE}
 
@@ -440,4 +493,5 @@ n <- tsne_results_samples %>%
 p3 <- plot_grid(fig_M1M2, n, rel_widths = c(1, 1.25))
 
 ```
+
 

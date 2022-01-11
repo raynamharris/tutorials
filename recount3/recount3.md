@@ -150,11 +150,11 @@
     # get GTEx heart data
     human_projects <- available_projects(organism = "human")
 
-    ## 2022-01-07 10:34:42 caching file sra.recount_project.MD.gz.
+    ## 2022-01-11 11:37:37 caching file sra.recount_project.MD.gz.
 
-    ## 2022-01-07 10:34:44 caching file gtex.recount_project.MD.gz.
+    ## 2022-01-11 11:37:40 caching file gtex.recount_project.MD.gz.
 
-    ## 2022-01-07 10:34:45 caching file tcga.recount_project.MD.gz.
+    ## 2022-01-11 11:37:41 caching file tcga.recount_project.MD.gz.
 
     head(human_projects)
 
@@ -166,103 +166,37 @@
     ## 5 SRP133965    human         sra data_sources/sra data_sources        12
     ## 6 SRP096765    human         sra data_sources/sra data_sources         7
 
-    subset(human_projects, 
-           file_source == "gtex" & 
-             project_type == "data_sources")
-
-    ##              project organism file_source      project_home project_type
-    ## 8678  ADIPOSE_TISSUE    human        gtex data_sources/gtex data_sources
-    ## 8679          MUSCLE    human        gtex data_sources/gtex data_sources
-    ## 8680    BLOOD_VESSEL    human        gtex data_sources/gtex data_sources
-    ## 8681           HEART    human        gtex data_sources/gtex data_sources
-    ## 8682           OVARY    human        gtex data_sources/gtex data_sources
-    ## 8683          UTERUS    human        gtex data_sources/gtex data_sources
-    ## 8684          VAGINA    human        gtex data_sources/gtex data_sources
-    ## 8685          BREAST    human        gtex data_sources/gtex data_sources
-    ## 8686            SKIN    human        gtex data_sources/gtex data_sources
-    ## 8687  SALIVARY_GLAND    human        gtex data_sources/gtex data_sources
-    ## 8688           BRAIN    human        gtex data_sources/gtex data_sources
-    ## 8689   ADRENAL_GLAND    human        gtex data_sources/gtex data_sources
-    ## 8690         THYROID    human        gtex data_sources/gtex data_sources
-    ## 8691            LUNG    human        gtex data_sources/gtex data_sources
-    ## 8692          SPLEEN    human        gtex data_sources/gtex data_sources
-    ## 8693        PANCREAS    human        gtex data_sources/gtex data_sources
-    ## 8694       ESOPHAGUS    human        gtex data_sources/gtex data_sources
-    ## 8695         STOMACH    human        gtex data_sources/gtex data_sources
-    ## 8696           COLON    human        gtex data_sources/gtex data_sources
-    ## 8697 SMALL_INTESTINE    human        gtex data_sources/gtex data_sources
-    ## 8698        PROSTATE    human        gtex data_sources/gtex data_sources
-    ## 8699          TESTIS    human        gtex data_sources/gtex data_sources
-    ## 8700           NERVE    human        gtex data_sources/gtex data_sources
-    ## 8701       PITUITARY    human        gtex data_sources/gtex data_sources
-    ## 8702           BLOOD    human        gtex data_sources/gtex data_sources
-    ## 8703           LIVER    human        gtex data_sources/gtex data_sources
-    ## 8704          KIDNEY    human        gtex data_sources/gtex data_sources
-    ## 8705    CERVIX_UTERI    human        gtex data_sources/gtex data_sources
-    ## 8706  FALLOPIAN_TUBE    human        gtex data_sources/gtex data_sources
-    ## 8707         BLADDER    human        gtex data_sources/gtex data_sources
-    ## 8708        STUDY_NA    human        gtex data_sources/gtex data_sources
-    ## 8709     BONE_MARROW    human        gtex data_sources/gtex data_sources
-    ##      n_samples
-    ## 8678      1293
-    ## 8679       881
-    ## 8680      1398
-    ## 8681       942
-    ## 8682       195
-    ## 8683       159
-    ## 8684       173
-    ## 8685       482
-    ## 8686      1940
-    ## 8687       178
-    ## 8688      2931
-    ## 8689       274
-    ## 8690       706
-    ## 8691       655
-    ## 8692       255
-    ## 8693       360
-    ## 8694      1577
-    ## 8695       384
-    ## 8696       822
-    ## 8697       193
-    ## 8698       263
-    ## 8699       410
-    ## 8700       659
-    ## 8701       301
-    ## 8702      1048
-    ## 8703       251
-    ## 8704        98
-    ## 8705        19
-    ## 8706         9
-    ## 8707        21
-    ## 8708       133
-    ## 8709       204
-
     gtex_heart <- subset(human_projects,
                          project == "HEART"  & 
                            file_source == "gtex" & 
                            project_type == "data_sources" )
 
+    head(gtex_heart)
+
+    ##      project organism file_source      project_home project_type n_samples
+    ## 8681   HEART    human        gtex data_sources/gtex data_sources       942
+
     rse_gtex_heart <- create_rse(gtex_heart)
 
-    ## 2022-01-07 10:34:52 downloading and reading the metadata.
+    ## 2022-01-11 11:37:49 downloading and reading the metadata.
 
-    ## 2022-01-07 10:34:53 caching file gtex.gtex.HEART.MD.gz.
+    ## 2022-01-11 11:37:50 caching file gtex.gtex.HEART.MD.gz.
 
-    ## 2022-01-07 10:34:54 caching file gtex.recount_project.HEART.MD.gz.
+    ## 2022-01-11 11:37:51 caching file gtex.recount_project.HEART.MD.gz.
 
-    ## 2022-01-07 10:34:55 caching file gtex.recount_qc.HEART.MD.gz.
+    ## 2022-01-11 11:37:53 caching file gtex.recount_qc.HEART.MD.gz.
 
-    ## 2022-01-07 10:34:56 caching file gtex.recount_seq_qc.HEART.MD.gz.
+    ## 2022-01-11 11:37:54 caching file gtex.recount_seq_qc.HEART.MD.gz.
 
-    ## 2022-01-07 10:34:57 downloading and reading the feature information.
+    ## 2022-01-11 11:37:56 downloading and reading the feature information.
 
-    ## 2022-01-07 10:34:58 caching file human.gene_sums.G026.gtf.gz.
+    ## 2022-01-11 11:37:57 caching file human.gene_sums.G026.gtf.gz.
 
-    ## 2022-01-07 10:34:59 downloading and reading the counts: 942 samples across 63856 features.
+    ## 2022-01-11 11:37:59 downloading and reading the counts: 942 samples across 63856 features.
 
-    ## 2022-01-07 10:35:00 caching file gtex.gene_sums.HEART.G026.gz.
+    ## 2022-01-11 11:38:00 caching file gtex.gene_sums.HEART.G026.gz.
 
-    ## 2022-01-07 10:35:15 construcing the RangedSummarizedExperiment (rse) object.
+    ## 2022-01-11 11:38:15 construcing the RangedSummarizedExperiment (rse) object.
 
     rse_gtex_heart
 
@@ -791,8 +725,9 @@
     ## [1] "external_id"       "study"             "gtex.run_acc"     
     ## [4] "gtex.age"          "gtex.smtsd"        "ENSG00000198712.1"
 
-    tsne_data <- countData_long_wide[ ,6:306] # We are sub-setting IR object such as to include 'all rows' and columns 1 to 4.
-    tsne_samples <- countData_long_wide[ ,1:5] # We are sub-setting IR object such as to include 'all rows' and column 5.
+    tsne_samples <- countData_long_wide[ ,1:5]  
+    tsne_data <- countData_long_wide[ ,6:15225] 
+
 
 
     ## Run the t-SNE algorithm and store the results into an object called tsne_results
@@ -810,13 +745,13 @@
     ## 4 GTEX-13X6K-1826-SM-5O9CR.1 HEART   SRR1401446    60-69 Heart - Left Ventricle
     ## 5 GTEX-13NYB-0226-SM-5N9G4.1 HEART   SRR1507229    40-49 Heart - Left Ventricle
     ## 6 GTEX-14A5I-1226-SM-5NQBW.1 HEART   SRR1430420    50-59 Heart - Left Ventricle
-    ##          V1       V2
-    ## 1 -1.630342 23.44009
-    ## 2 -1.659487 23.34672
-    ## 3 -1.482974 23.41477
-    ## 4 -0.783947 22.31301
-    ## 5 -4.110856 20.51454
-    ## 6 -2.111635 22.16040
+    ##          V1        V2
+    ## 1 -21.86043 -6.669414
+    ## 2 -21.77424 -6.697826
+    ## 3 -21.83821 -6.558364
+    ## 4 -20.79559 -5.800334
+    ## 5 -18.76831 -8.937278
+    ## 6 -20.61641 -7.092860
 
     c <- tsne_results_samples %>%
       ggplot(aes(x = V1, y = V2, color = gtex.smtsd)) +
@@ -839,42 +774,11 @@
     colData$gtex.age <- gsub(x = colData$gtex.age , pattern = "\\-", replacement = "_")
     colData$gtex.smtsd <-  gsub(x = colData$gtex.smtsd , pattern = "\\-", replacement = "")
     colData$gtex.smtsd <-  gsub(x = colData$gtex.smtsd , pattern = " ", replacement = "")
-    head(names(countData))
-
-    ## [1] "GTEX_12ZZX_0726_SM_5EGKA.1" "GTEX_13D11_1526_SM_5J2NA.1"
-    ## [3] "GTEX_ZAJG_0826_SM_5PNVA.1"  "GTEX_11TT1_1426_SM_5EGIA.1"
-    ## [5] "GTEX_13VXT_1126_SM_5LU3A.1" "GTEX_14ASI_0826_SM_5Q5EB.1"
-
-    head(rownames(colData))
-
-    ## [1] "GTEX_12ZZX_0726_SM_5EGKA.1" "GTEX_13D11_1526_SM_5J2NA.1"
-    ## [3] "GTEX_ZAJG_0826_SM_5PNVA.1"  "GTEX_11TT1_1426_SM_5EGIA.1"
-    ## [5] "GTEX_13VXT_1126_SM_5LU3A.1" "GTEX_14ASI_0826_SM_5Q5EB.1"
 
     # check that rows and samples match
-    rownames(colData) == colnames(countData)
+    head(rownames(colData) == colnames(countData))
 
-    ##   [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
-    ##  [16] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
-    ##  [31] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
-    ##  [46] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
-    ##  [61] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
-    ##  [76] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
-    ##  [91] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
-    ## [106] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
-    ## [121] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
-    ## [136] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
-    ## [151] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
-    ## [166] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
-    ## [181] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
-    ## [196] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
-    ## [211] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
-    ## [226] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
-    ## [241] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
-    ## [256] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
-    ## [271] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
-    ## [286] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
-    ## [301] TRUE TRUE TRUE TRUE TRUE TRUE
+    ## [1] TRUE TRUE TRUE TRUE TRUE TRUE
 
     # subset to 100 for deseq
 
@@ -1022,6 +926,82 @@
     ## Warning: Transformation introduced infinite values in continuous y-axis
 
     ## Warning: Removed 51 rows containing non-finite values (stat_boxplot).
+
+    a + theme(legend.position = "right")
+
+![](recount3_files/figure-markdown_strict/recount3-gtex-1.png)
+
+    b + theme(legend.position = "right") + 
+      labs(fill = "Tissue") +
+      scale_y_continuous(labels = scales::label_number_si()) 
+
+    ## Scale for 'y' is already present. Adding another scale for 'y', which will
+    ## replace the existing scale.
+
+![](recount3_files/figure-markdown_strict/recount3-gtex-2.png)
+
+    g <- tsne_results_samples %>%
+          ggplot(aes(x = V1, y = V2, color = gtex.smtsd)) +
+          geom_point() +
+          theme_linedraw(base_size = 15) +
+          theme(legend.position = "bottom", legend.direction = "vertical") +
+          labs(x = "tSNE dimention 1", 
+               y = "tSNE dimention 2", 
+               color = "Tissue", 
+               subtitle = "")
+
+    h <- tsne_results_samples %>%
+          ggplot(aes(x = V1, y = V2, color = gtex.age)) +
+          geom_point() +
+          theme_linedraw(base_size = 15) +
+          theme(legend.position = "bottom", legend.direction = "vertical") +
+          labs(x = "tSNE dimention 1", 
+               y = "tSNE dimention 2", 
+               color = "Age", 
+               subtitle = "") +
+      guides(color=guide_legend(nrow=2,byrow=TRUE))
+
+    plot_grid(g,h, nrow =1)
+
+![](recount3_files/figure-markdown_strict/recount3-gtex-3.png)
+
+    d <- ggmaplot(res1, main = expression("Age: 30-39" %->% "40-49"),
+             fdr = 0.05, fc = 2, size = 0.4,
+             palette = c("#B31B21", "#1465AC", "darkgray"),
+             legend = "bottom", top = 1,
+             ggtheme = ggplot2::theme_linedraw(base_size = 15))
+
+
+    e <- ggmaplot(res2, main = expression("Heart: Atrial Appendage" %->% "Left Ventricle"),
+             fdr = 0.05, fc = 2, size = 0.4,
+             palette = c("#B31B21", "#1465AC", "darkgray"),
+             legend = "bottom", top = 1,
+             ggtheme = ggplot2::theme_linedraw(base_size = 15))
+
+    p2 <- plot_grid(d,e, f, nrow = 1)
+
+    ## Warning: Transformation introduced infinite values in continuous y-axis
+
+    ## Warning: Removed 51 rows containing non-finite values (stat_boxplot).
+
+    p2
+
+![](recount3_files/figure-markdown_strict/recount3-gtex-4.png)
+
+    png("../images/recount3-gtex-2.png", width = 1200, height = 600)
+    print(p2)
+    dev.off()
+
+    ## quartz_off_screen 
+    ##                 2
+
+    sum(res1$padj < 0.05, na.rm=TRUE) # age 1145 DEGS
+
+    ## [1] 993
+
+    sum(res2$padj < 0.05, na.rm=TRUE) # tissue 5243 tissue
+
+    ## [1] 4256
 
     # From https://bioconductor.org/packages/release/bioc/vignettes/recount3/inst/doc/recount3-quickstart.html
     # Manuscript https://elifesciences.org/articles/14997
