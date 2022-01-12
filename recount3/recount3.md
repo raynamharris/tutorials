@@ -978,22 +978,25 @@
              legend = "bottom", top = 1,
              ggtheme = ggplot2::theme_linedraw(base_size = 15))
 
-    p2 <- plot_grid(d,e, f, nrow = 1)
-
-    ## Warning: Transformation introduced infinite values in continuous y-axis
-
-    ## Warning: Removed 51 rows containing non-finite values (stat_boxplot).
-
+    p2 <- plot_grid(d,e, nrow = 1)
     p2
 
 ![](recount3_files/figure-markdown_strict/recount3-gtex-4.png)
 
-    png("../images/recount3-gtex-2.png", width = 1200, height = 600)
+    png("../images/recount3-gtex-4.png", width = 1200, height = 600)
     print(p2)
     dev.off()
 
     ## quartz_off_screen 
     ##                 2
+
+    f
+
+    ## Warning: Transformation introduced infinite values in continuous y-axis
+
+    ## Warning: Removed 51 rows containing non-finite values (stat_boxplot).
+
+![](recount3_files/figure-markdown_strict/recount3-gtex-5.png)
 
     sum(res1$padj < 0.05, na.rm=TRUE) # age 1145 DEGS
 

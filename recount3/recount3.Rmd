@@ -294,11 +294,14 @@ e <- ggmaplot(res2, main = expression("Heart: Atrial Appendage" %->% "Left Ventr
          legend = "bottom", top = 1,
          ggtheme = ggplot2::theme_linedraw(base_size = 15))
 
-p2 <- plot_grid(d,e, f, nrow = 1)
+p2 <- plot_grid(d,e, nrow = 1)
 p2
-png("../images/recount3-gtex-2.png", width = 1200, height = 600)
+
+png("../images/recount3-gtex-4.png", width = 1200, height = 600)
 print(p2)
 dev.off()
+
+f
 
 
 sum(res1$padj < 0.05, na.rm=TRUE) # age 1145 DEGS
