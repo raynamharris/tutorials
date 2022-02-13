@@ -31,12 +31,6 @@ countData <- assays(rse_gtex_heart)$raw_counts %>%
 colData <- colData(rse_gtex_heart) %>% as.data.frame()
 
 
-assay(rse_gtex_heart, "counts") <- transform_counts(rse_gtex_heart)
-
-countData2 <- assays(rse_gtex_heart)$counts %>% 
-  as.data.frame()
-tail(countData2)
-
 # check that rows and samples match
 rownames(colData) == colnames(countData)
 
