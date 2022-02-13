@@ -1,5 +1,11 @@
 # From https://bioconductor.org/packages/release/bioc/vignettes/recount3/inst/doc/recount3-quickstart.html
 
+#if (!requireNamespace("BiocManager", quietly = TRUE)) {
+#    install.packages("BiocManager")
+#}
+
+#BiocManager::install("recount3")
+
 library(tidyverse)
 library(recount3)
 library(biomaRt)
