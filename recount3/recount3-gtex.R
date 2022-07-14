@@ -61,7 +61,7 @@ colData <-  colData %>%
 head(colData)
 
 
-a <- colData %>%
+colData %>%
   group_by(gtex.age, gtex.smtsd) %>%
   summarise(cohort_size = length(gtex.age)) %>%
   ggplot(aes(x = gtex.age,  y = cohort_size, fill = gtex.smtsd)) +
@@ -115,7 +115,7 @@ tail(countData_long)
 
 
 
-b <- countData_long %>%
+countData_long %>%
   filter( hgnc_symbol == "MT-CO2") %>%
   ggplot(aes(x = gtex.age, y = counts, 
              fill = gtex.smtsd)) +
@@ -149,7 +149,7 @@ tsne_results_samples <- as.data.frame(tsne_results$Y) %>%
   cbind(tsne_samples, .)
 head(tsne_results_samples) 
 
-c <- tsne_results_samples %>%
+tsne_results_samples %>%
   ggplot(aes(x = V1, y = V2, color = gtex.smtsd)) +
   geom_point() +
   theme_linedraw(base_size = 15) +
@@ -160,13 +160,10 @@ c <- tsne_results_samples %>%
        subtitle = "")
 
 # plot fav gene and tsne
-p <- plot_grid(a,b,c, nrow =1,
+plot_grid(a,b,c, nrow =1,
                rel_widths = c(1,1.1,0.9))
-p 
 
-png("../images/recount3-gtex-1.png", width = 1200, height = 600)
-print(p)
-dev.off()
+
 
 
 # replace dashes with underscores for deseq
@@ -229,7 +226,7 @@ ensembl_gene_id <- data.frame(ensembl_gene_id) %>%
 ensembl_gene_id <- ensembl_gene_id[1:51297,]
 head(ensembl_gene_id )
 
-d <- ggmaplot(res1, main = expression("Age 30-39" %->% "Age 40 -49"),
+ggmaplot(res1, main = expression("Age 30-39" %->% "Age 40 -49"),
          fdr = 0.05, fc = 2, size = 0.4,
          palette = c("#B31B21", "#1465AC", "darkgray"),
          #genenames = as.vector( ensembl_gene_id$hgnc_symbol),
@@ -237,7 +234,7 @@ d <- ggmaplot(res1, main = expression("Age 30-39" %->% "Age 40 -49"),
          ggtheme = ggplot2::theme_linedraw(base_size = 15))
 
 
-e <- ggmaplot(res2, main = expression("Heart Atrial Appendage" %->% "Heart Left Ventricle"),
+ggmaplot(res2, main = expression("Heart Atrial Appendage" %->% "Heart Left Ventricle"),
          fdr = 0.05, fc = 2, size = 0.4,
          palette = c("#B31B21", "#1465AC", "darkgray"),
          #genenames = as.vector( ensembl_gene_id$hgnc_symbol),
@@ -245,7 +242,7 @@ e <- ggmaplot(res2, main = expression("Heart Atrial Appendage" %->% "Heart Left 
          ggtheme = ggplot2::theme_linedraw(base_size = 15))
 
 
-f <- countData_long %>%
+countData_long %>%
   filter( ensembl_gene_id == "ENSG00000163217.1") %>%
   ggplot(aes(x = gtex.age, y = counts, 
              fill = gtex.smtsd)) +
@@ -256,9 +253,5 @@ f <- countData_long %>%
   theme(legend.position = "bottom", legend.direction = "vertical")
 
 
-p2 <- plot_grid(d,e, f, nrow = 1, rel_widths = c(1,1.1,1))
-p2
+plot_grid(d,e, f, nrow = 1, rel_widths = c(1,1.1,1))
 
-png("../images/recount3-gtex-4.png", width = 1200, height = 600)
-print(p2)
-dev.off()
