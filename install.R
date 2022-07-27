@@ -7,6 +7,7 @@ install.packages('magick')
 install.packages('scales')
 install.packages('rtsne')
 install.packages('cowplot')
+install.packages('vcfR')
 
 if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
