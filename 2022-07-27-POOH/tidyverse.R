@@ -1,47 +1,27 @@
-# install.packages("dplyr")
+# install.packages("tidyverse")
 
-library(dplyr)
 library(readr)
+library(dplyr)
 library(tidyr)
 
 # read df
 variants <- read.csv("2022-07-27-POOH/combined_tidy_vcf.csv") 
 
-# make a tibble for easy viewing
-variants <- as_tibble(variants)
-
-# view
 head(variants)
-str(variants)
+glimpse(variants)
 
-# select columns
 select(variants, sample_id, REF, ALT, DP)
-
 select(variants, -CHROM)
-
-select(variants, ends_with("B"))
-
 select(variants, contains("i"), -Indiv, -FILTER, POS)
 
-# filter rows
-
 filter(variants, sample_id == "SRR2584863")
-
 filter(variants, REF %in% c("T", "G"))
-
 filter(variants, QUAL >= 100)
-
 filter(variants, INDEL)
-
 filter(variants, !is.na(IDV))
-
 filter(variants, sample_id == "SRR2584863", QUAL >= 100)
-
 filter(variants, sample_id == "SRR2584863", (INDEL | QUAL >= 100))
-
 filter(variants, POS >= 1e6 & POS <= 2e6, !INDEL, QUAL > 200)
-
-## pipes
 
 variants %>%
   filter(sample_id == "SRR2584863") %>%
@@ -52,49 +32,73 @@ SRR2584863_variants <- variants %>%
   filter(sample_id == "SRR2584863") %>%
   select(REF, ALT, DP)
 
-SRR2584863_variants
-
-SRR2584863_variants %>% head()
+SRR2584863_variants %>% slice(1:6)
+SRR2584863_variants %>% slice(10:25)
 
 variants %>%
-  mutate(POLPROB = 1 - (10 ^ -(QUAL/10)))
+  filter(sample_id == "SRR2584863" & DP >= 10) %>%
+  slice(5:11) %>%
+  select(REF, ALT, POS)
+
+variants %>%
+  mutate(POLPROB = 1 - (10 ^ -(QUAL/10))) 
+
+variants %>%
+  mutate(POLPROB = 1 - (10 ^ -(QUAL/10))) %>%
+  arrange(POLPROB) %>%
+  select(POLPROB, everything())
 
 variants %>%
   mutate(POLPROB = 1 - 10 ^ -(QUAL/10)) %>%
+  arrange(POLPROB) %>%
   select(sample_id, POS, QUAL, POLPROB)
 
 
 variants %>%
   group_by(sample_id) %>%
-  summarize(n())
+  summarize(n = n())
 
 variants %>%
-  group_by(ALT) %>%
+  group_by(sample_id)  %>%
+  tally()
+
+variants %>%
+  group_by(sample_id) %>%
   count()
 
 variants %>%
-  count(ALT)
+  group_by(sample_id) %>%
+  summarize(
+    n = n(),
+    mean_DP = mean(DP),
+    median_DP = median(DP),
+    min_DP = min(DP),
+    max_DP = max(DP))
 
-variants %>%
-  count(sample_id)
+variants_sum <- variants %>%
+  group_by(sample_id, CHROM) %>%
+  summarize(mean_DP = mean(DP)) 
+variants_sum
+
+variants_wide <- variants_sum %>%
+  pivot_wider(names_from = sample_id, values_from = mean_DP)
+variants_wide
 
 
-variants %>%
+results_wide <- variants %>%
   group_by(sample_id) %>%
   summarize(
     mean_DP = mean(DP),
     median_DP = median(DP),
     min_DP = min(DP),
     max_DP = max(DP))
+results_wide 
 
-# pivot
+results_long <- results_wide %>% 
+  pivot_longer(-sample_id, names_to = "stat", values_to = "value")
+results_long
 
-variants_wide <- variants %>%
-  group_by(sample_id, CHROM) %>%
-  summarize(mean_DP = mean(DP)) %>%
-  pivot_wider(names_from = sample_id, values_from = mean_DP)
-variants_wide
+results_long %>%
+  ungroup() %>%
+  pivot_wider(names_from = "stat", values_from = "value")
 
-
-variants_wide %>%
-  pivot_longer(-CHROM, names_to = "sample_id", values_to = "mean_DP")
